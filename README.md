@@ -26,15 +26,15 @@ and efficient state handling without external dependencies.
 ---
 
 ## 🏗️ Tech Stack
-```
-| Category | Technology |
-|-----------|-------------|
-| Language | **Java (Android SDK)** |
-| IDE | **Android Studio (Hedgehog / Iguana / Latest)** |
-| UI | XML Layouts + ConstraintLayout |
-| Version Control | Git & GitHub |
-| Architecture | MVC (Basic Structure) |
-```
+
+| Category        | Technology                                |
+|-----------------|-------------------------------------------|
+| Language        | **Java (Android SDK)**                    |
+| IDE             | **Android Studio (Hedgehog / Iguana / Latest)** |
+| UI              | XML Layouts + ConstraintLayout             |
+| Version Control | Git & GitHub                              |
+| Architecture    | MVC (Basic Structure)                     |
+
 ---
 
 ## 🚀 Current Progress
