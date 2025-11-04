@@ -12,65 +12,55 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.laylarodas.quicknotes.R;
+import com.laylarodas.quicknotes.model.Note;
+
 /**
  * Adapter básico para mostrar una lista de notas (texto simple).
  * Más adelante cambiaré List<String> por el modelo real (Note).
  */
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder> {
 
-    private final List<String> notes = new ArrayList<>();
+    private final List<Note> notes = new ArrayList<>();
 
-    // --- ViewHolder: representa una fila de la lista ---
-    static class NoteViewHolder extends RecyclerView.ViewHolder {
-        final TextView tvNoteText;
-
-        public NoteViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvNoteText = itemView.findViewById(R.id.tvNoteText);
-        }
+    public void submitList(List<Note> newNotes){
+        notes.clear();
+        if (newNotes != null) notes.addAll(newNotes);
+        notifyDataSetChanged();
     }
 
+    public void addNote(Note note){
+        notes.add(0,note);
+        notifyItemInserted(0);
+    }
+
+    public Note getNote(int position){
+        return notes.get(position);
+    }
 
     @NonNull
     @Override
-    public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // obtener un "inflador" a partir del contexto del padre
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        // inflar el XML del item y obtener la View resultante
-        View itemView = inflater.inflate(R.layout.item_note, parent, /* attachToRoot = */ false);
-        // crear el ViewHolder pasándole la View del item
+    public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_note, parent, false);
         return new NoteViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull NoteViewHolder holder, int position) {
-        // obtener el texto correspondiente a esta posición
-        String text = notes.get(position);
-
-        // vincular ese texto con el TextView del ViewHolder
-        holder.tvNoteText.setText(text);
-
+    public void onBindViewHolder(@NonNull NoteViewHolder holder, int position){
+        holder.tvNoteText.setText(notes.get(position).getTitle());
     }
 
     @Override
-    public int getItemCount() {
+    public int getItemCount(){
         return notes.size();
     }
 
-    /** Reemplaza toda la lista de notas y redibuja el RecyclerView. */
-    public void submitList(@androidx.annotation.Nullable List<String> newNotes) {
-        notes.clear();                 // vacía la lista actual
-        if (newNotes != null) {        // evita NullPointerException
-            notes.addAll(newNotes);    // copia los datos nuevos
+    public static class NoteViewHolder extends RecyclerView.ViewHolder{
+        final TextView tvNoteText;
+
+        NoteViewHolder(@NonNull View itemView){
+            super(itemView);
+            tvNoteText = itemView.findViewById(R.id.tvNoteText);
         }
-        notifyDataSetChanged();        // avisa al RecyclerView que redibuje todo
     }
-
-    /** Inserta una nota al inicio y anima la inserción. */
-    public void addNote(@NonNull String text) {
-        notes.add(0, text);      //  agrega en posición 0 (arriba)
-        notifyItemInserted(0);   //  notifica solo ese cambio → animación
-    }
-
 
 }
