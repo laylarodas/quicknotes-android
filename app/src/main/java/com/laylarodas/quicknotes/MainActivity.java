@@ -2,12 +2,17 @@ package com.laylarodas.quicknotes;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,14 +48,7 @@ public class MainActivity extends AppCompatActivity {
         adapter.submitList(new ArrayList<>(notes));
 
         FloatingActionButton fab = findViewById(R.id.fabAddNote);
-        fab.setOnClickListener(v -> {
-            int next = notes.size() + 1;
-            Note newNote = new Note("New note " + (notes.size() + 1), "");
-            notes.add(0,newNote);
-
-            NotesStorage.save(this, notes);
-            adapter.submitList(new ArrayList<>(notes));
-        });
+        fab.setOnClickListener(v -> showNewNoteDialog());
 
         // ===== Quick test: load -> add -> save -> reload =====
         /*List<Note> notes = NotesStorage.load(this);// this --> Context de la Activity. Return empty si no hay nada
@@ -64,6 +62,55 @@ public class MainActivity extends AppCompatActivity {
         Log.d("QuickNotes", "Notes count after save: " + reloaded.size());
         Toast.makeText(this, "Notes: " + reloaded.size(), Toast.LENGTH_SHORT).show();
         */
+    }
+
+    private void showNewNoteDialog() {
+        // Inflar el layout del diálogo
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_new_note, null);
+        
+        // Obtener referencias a los campos de entrada
+        TextInputEditText etTitle = dialogView.findViewById(R.id.etNoteTitle);
+        TextInputEditText etContent = dialogView.findViewById(R.id.etNoteContent);
+        
+        // Crear el diálogo
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+        
+        // Configurar el botón Guardar
+        dialogView.findViewById(R.id.btnSave).setOnClickListener(v -> {
+            String title = etTitle.getText().toString().trim();
+            String content = etContent.getText().toString().trim();
+            
+            // Validar que el título no esté vacío
+            if (title.isEmpty()) {
+                etTitle.setError("El título es obligatorio");
+                etTitle.requestFocus();
+                return;
+            }
+            
+            // Crear y guardar la nueva nota
+            Note newNote = new Note(title, content);
+            notes.add(0, newNote);
+            
+            // Guardar en almacenamiento persistente
+            NotesStorage.save(this, notes);
+            
+            // Actualizar el RecyclerView
+            adapter.submitList(new ArrayList<>(notes));
+            
+            // Mostrar mensaje de confirmación
+            Toast.makeText(this, "Nota guardada", Toast.LENGTH_SHORT).show();
+            
+            // Cerrar el diálogo
+            dialog.dismiss();
+        });
+        
+        // Configurar el botón Cancelar
+        dialogView.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
+        
+        // Mostrar el diálogo
+        dialog.show();
     }
 
 }
