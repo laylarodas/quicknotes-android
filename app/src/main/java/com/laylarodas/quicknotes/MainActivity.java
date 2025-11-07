@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -44,8 +45,14 @@ public class MainActivity extends AppCompatActivity {
         rvNotes.setAdapter(adapter);
 
         List<Note> loaded = NotesStorage.load(this);
-        if (loaded == null) notes = loaded;
+        if (loaded != null) notes = loaded;
         adapter.submitList(new ArrayList<>(notes));
+
+        // Configurar listener para editar nota al hacer click
+        adapter.setOnNoteClickListener((note, position) -> showEditNoteDialog(note, position));
+        
+        // Configurar listener para eliminar nota al hacer long-press
+        adapter.setOnNoteLongClickListener((note, position) -> showDeleteConfirmationDialog(note, position));
 
         FloatingActionButton fab = findViewById(R.id.fabAddNote);
         fab.setOnClickListener(v -> showNewNoteDialog());
@@ -111,6 +118,84 @@ public class MainActivity extends AppCompatActivity {
         
         // Mostrar el diálogo
         dialog.show();
+    }
+
+    private void showEditNoteDialog(Note note, int position) {
+        // Inflar el layout del diálogo
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_new_note, null);
+        
+        // Obtener referencias a los campos de entrada
+        TextView tvDialogTitle = dialogView.findViewById(R.id.tvDialogTitle);
+        TextInputEditText etTitle = dialogView.findViewById(R.id.etNoteTitle);
+        TextInputEditText etContent = dialogView.findViewById(R.id.etNoteContent);
+        
+        // Cambiar el título del diálogo
+        tvDialogTitle.setText("Editar Nota");
+        
+        // Precargar los valores actuales de la nota
+        etTitle.setText(note.getTitle());
+        etContent.setText(note.getContent());
+        
+        // Crear el diálogo
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+        
+        // Configurar el botón Guardar
+        dialogView.findViewById(R.id.btnSave).setOnClickListener(v -> {
+            String title = etTitle.getText().toString().trim();
+            String content = etContent.getText().toString().trim();
+            
+            // Validar que el título no esté vacío
+            if (title.isEmpty()) {
+                etTitle.setError("El título es obligatorio");
+                etTitle.requestFocus();
+                return;
+            }
+            
+            // Actualizar la nota existente
+            note.setTitle(title);
+            note.setContent(content);
+            
+            // Guardar en almacenamiento persistente
+            NotesStorage.save(this, notes);
+            
+            // Actualizar el RecyclerView con una nueva lista
+            adapter.submitList(new ArrayList<>(notes));
+            
+            // Mostrar mensaje de confirmación
+            Toast.makeText(this, "Nota actualizada", Toast.LENGTH_SHORT).show();
+            
+            // Cerrar el diálogo
+            dialog.dismiss();
+        });
+        
+        // Configurar el botón Cancelar
+        dialogView.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
+        
+        // Mostrar el diálogo
+        dialog.show();
+    }
+
+    private void showDeleteConfirmationDialog(Note note, int position) {
+        new AlertDialog.Builder(this)
+                .setTitle("Eliminar nota")
+                .setMessage("¿Estás seguro de que deseas eliminar esta nota?\n\n\"" + note.getTitle() + "\"")
+                .setPositiveButton("Eliminar", (dialog, which) -> {
+                    // Eliminar la nota de la lista
+                    notes.remove(position);
+                    
+                    // Guardar en almacenamiento persistente
+                    NotesStorage.save(this, notes);
+                    
+                    // Actualizar el RecyclerView con una nueva lista
+                    adapter.submitList(new ArrayList<>(notes));
+                    
+                    // Mostrar mensaje de confirmación
+                    Toast.makeText(this, "Nota eliminada", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
 }

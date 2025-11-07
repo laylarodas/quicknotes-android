@@ -21,6 +21,26 @@ import com.laylarodas.quicknotes.model.Note;
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder> {
 
     private final List<Note> notes = new ArrayList<>();
+    private OnNoteClickListener onNoteClickListener;
+    private OnNoteLongClickListener onNoteLongClickListener;
+
+    // Interfaces para los listeners
+    public interface OnNoteClickListener {
+        void onNoteClick(Note note, int position);
+    }
+
+    public interface OnNoteLongClickListener {
+        void onNoteLongClick(Note note, int position);
+    }
+
+    // Setters para los listeners
+    public void setOnNoteClickListener(OnNoteClickListener listener) {
+        this.onNoteClickListener = listener;
+    }
+
+    public void setOnNoteLongClickListener(OnNoteLongClickListener listener) {
+        this.onNoteLongClickListener = listener;
+    }
 
     public void submitList(List<Note> newNotes){
         notes.clear();
@@ -46,7 +66,24 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull NoteViewHolder holder, int position){
-        holder.tvNoteText.setText(notes.get(position).getTitle());
+        Note note = notes.get(position);
+        holder.tvNoteText.setText(note.getTitle());
+        
+        // Configurar click listener para editar
+        holder.itemView.setOnClickListener(v -> {
+            if (onNoteClickListener != null) {
+                onNoteClickListener.onNoteClick(note, position);
+            }
+        });
+        
+        // Configurar long click listener para eliminar
+        holder.itemView.setOnLongClickListener(v -> {
+            if (onNoteLongClickListener != null) {
+                onNoteLongClickListener.onNoteLongClick(note, position);
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
