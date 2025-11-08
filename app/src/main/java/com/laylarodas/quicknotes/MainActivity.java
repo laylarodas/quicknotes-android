@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
     private NoteAdapter adapter;
     private List<Note> notes = new ArrayList<>();
+    private View layoutEmptyState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +37,11 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        setContentView(R.layout.activity_main);
-
         RecyclerView rvNotes = findViewById(R.id.rvNotes);
         rvNotes.setLayoutManager(new LinearLayoutManager(this));
+
+        // Inicializar el layout de estado vacío
+        layoutEmptyState = findViewById(R.id.layoutEmptyState);
 
         adapter = new NoteAdapter();
         rvNotes.setAdapter(adapter);
@@ -47,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
         List<Note> loaded = NotesStorage.load(this);
         if (loaded != null) notes = loaded;
         adapter.submitList(new ArrayList<>(notes));
+        
+        // Actualizar estado vacío
+        updateEmptyState();
 
         // Configurar listener para editar nota al hacer click
         adapter.setOnNoteClickListener((note, position) -> showEditNoteDialog(note, position));
@@ -105,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
             
             // Actualizar el RecyclerView
             adapter.submitList(new ArrayList<>(notes));
+            updateEmptyState();
             
             // Mostrar mensaje de confirmación
             Toast.makeText(this, "Nota guardada", Toast.LENGTH_SHORT).show();
@@ -162,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
             
             // Actualizar el RecyclerView con una nueva lista
             adapter.submitList(new ArrayList<>(notes));
+            updateEmptyState();
             
             // Mostrar mensaje de confirmación
             Toast.makeText(this, "Nota actualizada", Toast.LENGTH_SHORT).show();
@@ -190,12 +197,24 @@ public class MainActivity extends AppCompatActivity {
                     
                     // Actualizar el RecyclerView con una nueva lista
                     adapter.submitList(new ArrayList<>(notes));
+                    updateEmptyState();
                     
                     // Mostrar mensaje de confirmación
                     Toast.makeText(this, "Nota eliminada", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
                 .show();
+    }
+
+    /**
+     * Actualiza la visibilidad del estado vacío según si hay notas o no
+     */
+    private void updateEmptyState() {
+        if (notes.isEmpty()) {
+            layoutEmptyState.setVisibility(View.VISIBLE);
+        } else {
+            layoutEmptyState.setVisibility(View.GONE);
+        }
     }
 
 }

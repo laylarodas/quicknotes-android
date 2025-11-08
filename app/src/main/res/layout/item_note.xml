@@ -27,17 +27,50 @@
             android:background="@color/primary_purple"
             android:layout_marginEnd="12dp"/>
         
-        <TextView
-            android:id="@+id/tvNoteText"
+        <!-- Contenedor vertical para título, contenido y fecha -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:minHeight="56dp"
-            android:gravity="center_vertical"
-            android:text="@string/sample_note"
-            android:textSize="16sp"
-            android:textColor="@color/text_primary"
-            android:lineSpacingExtra="4dp" />
+            android:orientation="vertical">
+            
+            <!-- Título de la nota -->
+            <TextView
+                android:id="@+id/tvNoteTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sample_note"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:maxLines="1"
+                android:ellipsize="end" />
+            
+            <!-- Preview del contenido -->
+            <TextView
+                android:id="@+id/tvNoteContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Contenido de la nota..."
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginTop="4dp"
+                android:lineSpacingExtra="2dp" />
+            
+            <!-- Fecha de última modificación -->
+            <TextView
+                android:id="@+id/tvNoteDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hace 5 minutos"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="6dp"
+                android:alpha="0.7" />
+                
+        </LinearLayout>
             
     </LinearLayout>
     

@@ -13,6 +13,7 @@ import java.util.List;
 
 import com.laylarodas.quicknotes.R;
 import com.laylarodas.quicknotes.model.Note;
+import com.laylarodas.quicknotes.utils.DateUtils;
 
 /**
  * Adapter básico para mostrar una lista de notas (texto simple).
@@ -67,7 +68,22 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     @Override
     public void onBindViewHolder(@NonNull NoteViewHolder holder, int position){
         Note note = notes.get(position);
-        holder.tvNoteText.setText(note.getTitle());
+        
+        // Mostrar título
+        holder.tvNoteTitle.setText(note.getTitle());
+        
+        // Mostrar contenido (o un mensaje si está vacío)
+        String content = note.getContent();
+        if (content == null || content.trim().isEmpty()) {
+            holder.tvNoteContent.setText("Sin contenido");
+            holder.tvNoteContent.setAlpha(0.5f);
+        } else {
+            holder.tvNoteContent.setText(content);
+            holder.tvNoteContent.setAlpha(1.0f);
+        }
+        
+        // Mostrar fecha de última modificación
+        holder.tvNoteDate.setText(DateUtils.getTimeAgo(note.getModifiedAt()));
         
         // Configurar click listener para editar
         holder.itemView.setOnClickListener(v -> {
@@ -92,11 +108,15 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     }
 
     public static class NoteViewHolder extends RecyclerView.ViewHolder{
-        final TextView tvNoteText;
+        final TextView tvNoteTitle;
+        final TextView tvNoteContent;
+        final TextView tvNoteDate;
 
         NoteViewHolder(@NonNull View itemView){
             super(itemView);
-            tvNoteText = itemView.findViewById(R.id.tvNoteText);
+            tvNoteTitle = itemView.findViewById(R.id.tvNoteTitle);
+            tvNoteContent = itemView.findViewById(R.id.tvNoteContent);
+            tvNoteDate = itemView.findViewById(R.id.tvNoteDate);
         }
     }
 
