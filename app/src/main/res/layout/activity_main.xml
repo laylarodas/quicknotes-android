@@ -5,38 +5,58 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFF00">  <!-- 💛 AMARILLO PARA PROBAR -->
+    android:background="@color/background_light">
 
-    <TextView
-        android:id="@+id/tvTitle"
+    <!-- Barra superior con diseño Material -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cvHeader"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="QuickNotes"
-        android:textSize="20sp"
-        android:padding="16dp"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="0dp"
+        app:cardBackgroundColor="@color/primary_purple"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
+        
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📝 QuickNotes"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:padding="20dp"/>
+            
+    </com.google.android.material.card.MaterialCardView>
 
+    <!-- RecyclerView con espacio mejorado -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvNotes"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        android:clipToPadding="false"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/cvHeader"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- FAB mejorado -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-    android:id="@+id/fabAddNote"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:contentDescription="@string/add_note"
-    android:src="@android:drawable/ic_input_add"
-    app:backgroundTint="@android:color/holo_purple"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    android:layout_marginEnd="24dp"
-    android:layout_marginBottom="24dp"/>
+        android:id="@+id/fabAddNote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/add_note"
+        android:src="@android:drawable/ic_input_add"
+        app:tint="@color/white"
+        app:backgroundTint="@color/primary_purple"
+        app:elevation="6dp"
+        app:pressedTranslationZ="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

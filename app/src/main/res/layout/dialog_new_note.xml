@@ -4,28 +4,49 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:background="@drawable/dialog_background">
 
-    <!-- Dialog Title -->
-    <TextView
-        android:id="@+id/tvDialogTitle"
+    <!-- Icono decorativo y título -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nueva Nota"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="?attr/colorPrimary"
-        android:layout_marginBottom="16dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+        
+        <TextView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="✍️"
+            android:textSize="28sp"
+            android:gravity="center"
+            android:layout_marginEnd="12dp"/>
+        
+        <TextView
+            android:id="@+id/tvDialogTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Nueva Nota"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary_purple" />
+    </LinearLayout>
 
-    <!-- Note Title Input -->
+    <!-- Note Title Input con estilo mejorado -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilNoteTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Título"
-        app:boxStrokeColor="?attr/colorPrimary"
-        app:hintTextColor="?attr/colorPrimary">
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/primary_purple"
+        app:boxStrokeWidth="2dp"
+        app:hintTextColor="@color/primary_purple"
+        app:startIconDrawable="@android:drawable/ic_menu_edit"
+        app:startIconTint="@color/primary_purple">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etNoteTitle"
@@ -33,35 +54,43 @@
             android:layout_height="wrap_content"
             android:inputType="textCapSentences"
             android:maxLines="1"
+            android:textSize="16sp"
             android:imeOptions="actionNext" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Note Content Input -->
+    <!-- Note Content Input con estilo mejorado -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilNoteContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        android:hint="Contenido"
-        app:boxStrokeColor="?attr/colorPrimary"
-        app:hintTextColor="?attr/colorPrimary">
+        android:hint="Contenido de la nota"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/primary_purple"
+        app:boxStrokeWidth="2dp"
+        app:hintTextColor="@color/primary_purple"
+        app:startIconDrawable="@android:drawable/ic_menu_info_details"
+        app:startIconTint="@color/primary_purple"
+        app:counterEnabled="true"
+        app:counterMaxLength="500">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etNoteContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textCapSentences|textMultiLine"
-            android:lines="4"
-            android:minLines="3"
-            android:maxLines="6"
+            android:lines="5"
+            android:minLines="4"
+            android:maxLines="8"
+            android:textSize="14sp"
             android:gravity="top|start"
             android:scrollbars="vertical"
             android:imeOptions="actionDone" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Dialog Buttons -->
+    <!-- Dialog Buttons mejorados -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -73,16 +102,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cancelar"
-            android:layout_marginEnd="8dp"
-            style="@style/Widget.Material3.Button.TextButton" />
+            android:textColor="@color/text_secondary"
+            android:layout_marginEnd="12dp"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Guardar" />
+            android:text="💾 Guardar"
+            android:paddingHorizontal="24dp"
+            android:backgroundTint="@color/primary_purple"
+            android:textColor="@color/white"/>
 
     </LinearLayout>
 
 </LinearLayout>
-
