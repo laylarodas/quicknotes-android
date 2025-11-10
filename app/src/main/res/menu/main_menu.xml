@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <!-- Buscar notas -->
+    <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="Buscar"
+        app:showAsAction="ifRoom" />
+    
+    <!-- Ordenar notas -->
+    <item
+        android:id="@+id/action_sort"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:title="Ordenar"
+        app:showAsAction="ifRoom">
+        
+        <menu>
+            <!-- Grupo con selección única -->
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/sort_by_modified"
+                    android:title="Por fecha de modificación"
+                    android:checked="true" />
+                
+                <item
+                    android:id="@+id/sort_by_created"
+                    android:title="Por fecha de creación" />
+                
+                <item
+                    android:id="@+id/sort_by_title_asc"
+                    android:title="Alfabético (A-Z)" />
+                
+                <item
+                    android:id="@+id/sort_by_title_desc"
+                    android:title="Alfabético (Z-A)" />
+            </group>
+        </menu>
+    </item>
+    
+</menu>
+

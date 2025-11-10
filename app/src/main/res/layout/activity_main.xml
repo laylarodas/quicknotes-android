@@ -19,15 +19,34 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
         
-        <TextView
-            android:id="@+id/tvTitle"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📝 QuickNotes"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            android:padding="20dp"/>
+            android:orientation="vertical">
+            
+            <!-- Toolbar con título y menú -->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="?attr/actionBarSize"
+                app:title="📝 QuickNotes"
+                app:titleTextColor="@color/white"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            
+            <!-- Barra de búsqueda -->
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:background="@drawable/dialog_background"
+                app:iconifiedByDefault="false"
+                app:queryHint="Buscar notas..."
+                app:queryBackground="@android:color/transparent"
+                android:visibility="gone" />
+                
+        </LinearLayout>
             
     </com.google.android.material.card.MaterialCardView>
 
@@ -57,6 +76,7 @@
         app:layout_constraintEnd_toEndOf="parent">
         
         <TextView
+            android:id="@+id/tvEmptyIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="📝"
@@ -64,6 +84,7 @@
             android:layout_marginBottom="16dp"/>
         
         <TextView
+            android:id="@+id/tvEmptyTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="No tienes notas aún"
@@ -73,6 +94,7 @@
             android:layout_marginBottom="8dp"/>
         
         <TextView
+            android:id="@+id/tvEmptyMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Presiona el botón + para crear tu primera nota"
