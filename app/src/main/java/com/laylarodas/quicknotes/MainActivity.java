@@ -2,7 +2,6 @@ package com.laylarodas.quicknotes;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,34 +14,38 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.textfield.TextInputEditText;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.stream.Collectors;
-
-import com.laylarodas.quicknotes.model.Note;
-import com.laylarodas.quicknotes.data.NotesStorage;
-import com.laylarodas.quicknotes.ui.NoteAdapter;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import com.laylarodas.quicknotes.model.Note;
+import com.laylarodas.quicknotes.ui.NoteAdapter;
+import com.laylarodas.quicknotes.viewmodel.NoteViewModel;
+
+import java.util.List;
+
+/**
+ * MainActivity - Activity principal que muestra la lista de notas.
+ * 
+ * Arquitectura MVVM:
+ * - Esta Activity SOLO maneja la UI (sin lógica de negocio)
+ * - Observa el ViewModel y actualiza la UI cuando los datos cambian
+ * - NO accede directamente a la base de datos
+ * - El ViewModel sobrevive a rotaciones de pantalla
+ */
 public class MainActivity extends AppCompatActivity {
 
+    private NoteViewModel viewModel;
     private NoteAdapter adapter;
-    private List<Note> notes = new ArrayList<>();
-    private List<Note> filteredNotes = new ArrayList<>();
     private View layoutEmptyState;
     private TextView tvEmptyIcon;
     private TextView tvEmptyTitle;
     private TextView tvEmptyMessage;
     private SearchView searchView;
-    private String currentSortMode = "modified"; // modified, created, title_asc, title_desc
+    private List<Note> currentNotes; // Lista actual para el estado vacío
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,173 +71,136 @@ public class MainActivity extends AppCompatActivity {
         searchView = findViewById(R.id.searchView);
         setupSearchView();
 
+        // Configurar adapter
         adapter = new NoteAdapter();
         rvNotes.setAdapter(adapter);
 
-        List<Note> loaded = NotesStorage.load(this);
-        if (loaded != null) notes = loaded;
+        // ==================== INICIALIZAR VIEWMODEL ====================
+        // ViewModelProvider crea o recupera el ViewModel
+        // Si ya existe (ej: después de rotación), reutiliza la instancia existente
+        viewModel = new ViewModelProvider(this).get(NoteViewModel.class);
         
-        // Ordenar notas por defecto (más reciente primero)
-        sortNotes();
-        
-        filteredNotes = new ArrayList<>(notes);
-        adapter.submitList(new ArrayList<>(filteredNotes));
-        
-        // Actualizar estado vacío
-        updateEmptyState();
+        // ==================== OBSERVAR LIVEDATA ====================
+        // Observar los resultados de búsqueda
+        // Cuando los datos cambian, esta función se ejecuta automáticamente
+        viewModel.getSearchResults().observe(this, notes -> {
+            // Actualizar el adapter con las nuevas notas
+            adapter.submitList(notes);
+            currentNotes = notes;
+            // Actualizar el estado vacío
+            updateEmptyState();
+        });
 
         // Configurar listener para editar nota al hacer click
-        adapter.setOnNoteClickListener((note, position) -> showEditNoteDialog(note, position));
+        adapter.setOnNoteClickListener((note, position) -> showEditNoteDialog(note));
         
         // Configurar listener para eliminar nota al hacer long-press
-        adapter.setOnNoteLongClickListener((note, position) -> showDeleteConfirmationDialog(note, position));
+        adapter.setOnNoteLongClickListener((note, position) -> showDeleteConfirmationDialog(note));
 
+        // Configurar FAB para crear notas
         FloatingActionButton fab = findViewById(R.id.fabAddNote);
         fab.setOnClickListener(v -> showNewNoteDialog());
-
-        // ===== Quick test: load -> add -> save -> reload =====
-        /*List<Note> notes = NotesStorage.load(this);// this --> Context de la Activity. Return empty si no hay nada
-                                                   // guardado
-        if (notes.isEmpty()) {// si esta vacio, agregamos nota de prueba
-            notes.add(new Note("Hello QuickNotes", "First saved note!"));
-            NotesStorage.save(this, notes);// guarda nota, serializa a JSON
-        }
-
-        List<Note> reloaded = NotesStorage.load(this); // volver a cargar, verifica guardado
-        Log.d("QuickNotes", "Notes count after save: " + reloaded.size());
-        Toast.makeText(this, "Notes: " + reloaded.size(), Toast.LENGTH_SHORT).show();
-        */
     }
 
+    /**
+     * Muestra el diálogo para crear una nueva nota.
+     */
     private void showNewNoteDialog() {
-        // Inflar el layout del diálogo
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_new_note, null);
         
-        // Obtener referencias a los campos de entrada
         TextInputEditText etTitle = dialogView.findViewById(R.id.etNoteTitle);
         TextInputEditText etContent = dialogView.findViewById(R.id.etNoteContent);
         
-        // Crear el diálogo
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(dialogView)
                 .create();
         
-        // Configurar el botón Guardar
+        // Botón Guardar
         dialogView.findViewById(R.id.btnSave).setOnClickListener(v -> {
             String title = etTitle.getText().toString().trim();
             String content = etContent.getText().toString().trim();
             
-            // Validar que el título no esté vacío
+            // Validar título
             if (title.isEmpty()) {
                 etTitle.setError("El título es obligatorio");
                 etTitle.requestFocus();
                 return;
             }
             
-            // Crear y guardar la nueva nota
-            Note newNote = new Note(title, content);
-            notes.add(0, newNote);
+            // ¡MUCHO MÁS SIMPLE! Solo llamar al ViewModel
+            viewModel.insert(title, content);
             
-            // Guardar en almacenamiento persistente
-            NotesStorage.save(this, notes);
-            
-            // Ordenar y filtrar
-            sortNotes();
-            applySearch();
-            updateEmptyState();
-            
-            // Mostrar mensaje de confirmación
             Toast.makeText(this, "Nota guardada", Toast.LENGTH_SHORT).show();
-            
-            // Cerrar el diálogo
             dialog.dismiss();
         });
         
-        // Configurar el botón Cancelar
+        // Botón Cancelar
         dialogView.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
         
-        // Mostrar el diálogo
         dialog.show();
     }
 
-    private void showEditNoteDialog(Note note, int position) {
-        // Inflar el layout del diálogo
+    /**
+     * Muestra el diálogo para editar una nota existente.
+     * Ya no necesita la posición porque trabajamos con objetos Note directamente.
+     */
+    private void showEditNoteDialog(Note note) {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_new_note, null);
         
-        // Obtener referencias a los campos de entrada
         TextView tvDialogTitle = dialogView.findViewById(R.id.tvDialogTitle);
         TextInputEditText etTitle = dialogView.findViewById(R.id.etNoteTitle);
         TextInputEditText etContent = dialogView.findViewById(R.id.etNoteContent);
         
-        // Cambiar el título del diálogo
         tvDialogTitle.setText("Editar Nota");
-        
-        // Precargar los valores actuales de la nota
         etTitle.setText(note.getTitle());
         etContent.setText(note.getContent());
         
-        // Crear el diálogo con botón de compartir
+        // Diálogo con botón de compartir
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
         builder.setNeutralButton("📤 Compartir", (dialog, which) -> shareNote(note));
         AlertDialog dialog = builder.create();
         
-        // Configurar el botón Guardar
+        // Botón Guardar
         dialogView.findViewById(R.id.btnSave).setOnClickListener(v -> {
             String title = etTitle.getText().toString().trim();
             String content = etContent.getText().toString().trim();
             
-            // Validar que el título no esté vacío
             if (title.isEmpty()) {
                 etTitle.setError("El título es obligatorio");
                 etTitle.requestFocus();
                 return;
             }
             
-            // Actualizar la nota existente
+            // Actualizar los campos de la nota
             note.setTitle(title);
             note.setContent(content);
             
-            // Guardar en almacenamiento persistente
-            NotesStorage.save(this, notes);
+            // ¡MUCHO MÁS SIMPLE! Solo llamar al ViewModel
+            viewModel.update(note);
             
-            // Ordenar y filtrar
-            sortNotes();
-            applySearch();
-            updateEmptyState();
-            
-            // Mostrar mensaje de confirmación
             Toast.makeText(this, "Nota actualizada", Toast.LENGTH_SHORT).show();
-            
-            // Cerrar el diálogo
             dialog.dismiss();
         });
         
-        // Configurar el botón Cancelar
+        // Botón Cancelar
         dialogView.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
         
-        // Mostrar el diálogo
         dialog.show();
     }
 
-    private void showDeleteConfirmationDialog(Note note, int position) {
+    /**
+     * Muestra el diálogo de confirmación para eliminar una nota.
+     * Ya no necesita la posición.
+     */
+    private void showDeleteConfirmationDialog(Note note) {
         new AlertDialog.Builder(this)
                 .setTitle("Eliminar nota")
                 .setMessage("¿Estás seguro de que deseas eliminar esta nota?\n\n\"" + note.getTitle() + "\"")
                 .setPositiveButton("Eliminar", (dialog, which) -> {
-                    // Eliminar la nota de la lista original (buscar por ID para evitar problemas con posiciones filtradas)
-                    Note noteToDelete = filteredNotes.get(position);
-                    notes.removeIf(n -> n.getId().equals(noteToDelete.getId()));
+                    // ¡MUCHO MÁS SIMPLE! Solo llamar al ViewModel
+                    viewModel.delete(note);
                     
-                    // Guardar en almacenamiento persistente
-                    NotesStorage.save(this, notes);
-                    
-                    // Ordenar y filtrar
-                    sortNotes();
-                    applySearch();
-                    updateEmptyState();
-                    
-                    // Mostrar mensaje de confirmación
                     Toast.makeText(this, "Nota eliminada", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
@@ -242,29 +208,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Actualiza la visibilidad del estado vacío según si hay notas o no
+     * Actualiza la visibilidad del estado vacío según si hay notas o no.
+     * Mucho más simple que antes: solo verificamos currentNotes.
      */
     private void updateEmptyState() {
-        if (filteredNotes.isEmpty()) {
+        if (currentNotes == null || currentNotes.isEmpty()) {
             layoutEmptyState.setVisibility(View.VISIBLE);
             
-            // Verificar si hay una búsqueda activa
             String query = searchView.getQuery().toString().trim();
             if (!query.isEmpty()) {
                 // Búsqueda sin resultados
                 tvEmptyIcon.setText("🔍");
                 tvEmptyTitle.setText("No se encontraron notas");
                 tvEmptyMessage.setText("No hay notas que coincidan con \"" + query + "\"");
-            } else if (notes.isEmpty()) {
+            } else {
                 // No hay notas en absoluto
                 tvEmptyIcon.setText("📝");
                 tvEmptyTitle.setText("No tienes notas aún");
                 tvEmptyMessage.setText("Presiona el botón + para crear tu primera nota");
-            } else {
-                // Hay notas pero el filtro/orden no muestra ninguna (caso raro)
-                tvEmptyIcon.setText("🔍");
-                tvEmptyTitle.setText("No se encontraron notas");
-                tvEmptyMessage.setText("Intenta cambiar el criterio de ordenamiento");
             }
         } else {
             layoutEmptyState.setVisibility(View.GONE);
@@ -286,38 +247,30 @@ public class MainActivity extends AppCompatActivity {
             if (searchView.getVisibility() == View.VISIBLE) {
                 searchView.setVisibility(View.GONE);
                 searchView.setQuery("", false);
-                applySearch();
+                viewModel.clearSearch(); // Limpiar búsqueda
             } else {
                 searchView.setVisibility(View.VISIBLE);
                 searchView.requestFocus();
             }
             return true;
         } else if (id == R.id.sort_by_modified) {
-            currentSortMode = "modified";
             item.setChecked(true);
-            sortNotes();
-            applySearch();
+            viewModel.setSortMode("modified"); // ViewModel maneja el ordenamiento
             Toast.makeText(this, "Ordenado por fecha de modificación", Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.sort_by_created) {
-            currentSortMode = "created";
             item.setChecked(true);
-            sortNotes();
-            applySearch();
+            viewModel.setSortMode("created");
             Toast.makeText(this, "Ordenado por fecha de creación", Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.sort_by_title_asc) {
-            currentSortMode = "title_asc";
             item.setChecked(true);
-            sortNotes();
-            applySearch();
+            viewModel.setSortMode("title_asc");
             Toast.makeText(this, "Ordenado alfabéticamente (A-Z)", Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.sort_by_title_desc) {
-            currentSortMode = "title_desc";
             item.setChecked(true);
-            sortNotes();
-            applySearch();
+            viewModel.setSortMode("title_desc");
             Toast.makeText(this, "Ordenado alfabéticamente (Z-A)", Toast.LENGTH_SHORT).show();
             return true;
         }
@@ -326,7 +279,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Configura el SearchView para búsqueda en tiempo real
+     * Configura el SearchView para búsqueda en tiempo real.
+     * Mucho más simple: solo actualiza el ViewModel.
      */
     private void setupSearchView() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -337,60 +291,17 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                applySearch();
+                // ¡MUCHO MÁS SIMPLE! Solo actualizar el ViewModel
+                viewModel.setSearchQuery(newText);
                 return true;
             }
         });
     }
 
     /**
-     * Ordena las notas según el modo actual
-     */
-    private void sortNotes() {
-        switch (currentSortMode) {
-            case "modified":
-                notes.sort((n1, n2) -> Long.compare(n2.getModifiedAt(), n1.getModifiedAt()));
-                break;
-            case "created":
-                notes.sort((n1, n2) -> Long.compare(n2.getCreatedAt(), n1.getCreatedAt()));
-                break;
-            case "title_asc":
-                notes.sort((n1, n2) -> n1.getTitle().compareToIgnoreCase(n2.getTitle()));
-                break;
-            case "title_desc":
-                notes.sort((n1, n2) -> n2.getTitle().compareToIgnoreCase(n1.getTitle()));
-                break;
-        }
-    }
-
-    /**
-     * Aplica el filtro de búsqueda actual
-     */
-    private void applySearch() {
-        String query = searchView.getQuery().toString().toLowerCase().trim();
-        
-        if (query.isEmpty()) {
-            // Sin búsqueda, mostrar todas las notas
-            filteredNotes = new ArrayList<>(notes);
-        } else {
-            // Filtrar notas por título o contenido
-            filteredNotes = notes.stream()
-                    .filter(note -> 
-                        note.getTitle().toLowerCase().contains(query) ||
-                        note.getContent().toLowerCase().contains(query)
-                    )
-                    .collect(Collectors.toList());
-        }
-        
-        adapter.submitList(new ArrayList<>(filteredNotes));
-        updateEmptyState();
-    }
-
-    /**
-     * Comparte una nota usando el sistema de compartir de Android
+     * Comparte una nota usando el sistema de compartir de Android.
      */
     private void shareNote(Note note) {
-        // Preparar el contenido a compartir
         String shareText = note.getTitle();
         if (note.getContent() != null && !note.getContent().trim().isEmpty()) {
             shareText += "\n\n" + note.getContent();
@@ -401,12 +312,10 @@ public class MainActivity extends AppCompatActivity {
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, note.getTitle());
         shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
         
-        // Crear el selector con título personalizado
         try {
             startActivity(Intent.createChooser(shareIntent, "Compartir nota mediante"));
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(this, "No hay aplicaciones para compartir", Toast.LENGTH_SHORT).show();
         }
     }
-
 }
