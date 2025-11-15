@@ -1,13 +1,15 @@
 # 📱 QuickNotes — Android Notes App (Java)
 
-**QuickNotes** is a lightweight and feature-rich Android app built with **Java** and **Material Design**.  
+**QuickNotes** is a lightweight and feature-rich Android app built with **Java**, **Room Database**, and **MVVM architecture**.  
 It was developed as a practice project to strengthen core Android fundamentals:  
-Activities, RecyclerView, local data persistence, and modern UI/UX patterns.
+Activities, RecyclerView, Room persistence, ViewModel & LiveData, and modern UI/UX patterns.
 
 <p align="center">
   <img src="https://img.shields.io/badge/Android-Java-green?logo=android" alt="Android Java">
   <img src="https://img.shields.io/badge/API-21%2B-blue" alt="API 21+">
   <img src="https://img.shields.io/badge/Material%20Design-3-purple" alt="Material Design">
+  <img src="https://img.shields.io/badge/Architecture-MVVM-orange" alt="MVVM">
+  <img src="https://img.shields.io/badge/Database-Room%202.6.1-red" alt="Room Database">
 </p>
 
 ---
@@ -15,8 +17,8 @@ Activities, RecyclerView, local data persistence, and modern UI/UX patterns.
 ## 🎯 Purpose
 
 This project is part of my Android learning path within the **DAM program**.  
-It focuses on understanding the **native Android architecture**, clean UI design,  
-and efficient state handling with modern Android best practices.
+It focuses on understanding **professional Android architecture** (MVVM), **Room Database**,  
+clean UI design with Material Design, and efficient state handling with **ViewModel & LiveData**.
 
 ---
 
@@ -81,11 +83,76 @@ and efficient state handling with modern Android best practices.
 | IDE                | **Android Studio (Latest)**                   |
 | UI Components      | XML Layouts + Material Design 3               |
 | Layout             | ConstraintLayout, LinearLayout                |
-| Data Persistence   | SharedPreferences (JSON serialization)        |
+| Database           | **Room 2.6.1** (SQLite abstraction)           |
+| Architecture       | **MVVM** (Model-View-ViewModel)               |
+| Lifecycle          | **ViewModel + LiveData 2.7.0**                |
+| Async Operations   | AsyncTask (Room operations)                   |
 | Version Control    | Git & GitHub                                  |
-| Architecture       | MVC with custom utilities                     |
 | Min SDK            | API 21 (Android 5.0)                          |
 | Target SDK         | API 34 (Android 14)                           |
+
+---
+
+## 🏛️ Architecture: MVVM Pattern
+
+The app follows the **MVVM (Model-View-ViewModel)** architecture pattern with **Room Database** for robust and scalable data management.
+
+### **Data Flow:**
+
+```
+┌──────────────────────────────────────────────────────┐
+│                    MainActivity                       │
+│                     (View Layer)                      │
+│  - Observes LiveData                                 │
+│  - Updates UI automatically                          │
+│  - Handles user interactions                         │
+└───────────────────┬──────────────────────────────────┘
+                    │ observe()
+                    ↓
+┌──────────────────────────────────────────────────────┐
+│                   NoteViewModel                       │
+│                (ViewModel Layer)                      │
+│  - Holds UI-related data (survives rotation)         │
+│  - Provides LiveData to UI                           │
+│  - Manages business logic                            │
+└───────────────────┬──────────────────────────────────┘
+                    │ delegates to
+                    ↓
+┌──────────────────────────────────────────────────────┐
+│                  NoteRepository                       │
+│               (Repository Pattern)                    │
+│  - Abstracts data sources                            │
+│  - Executes AsyncTasks for background operations     │
+│  - Single source of truth                            │
+└───────────────────┬──────────────────────────────────┘
+                    │ uses
+                    ↓
+┌──────────────────────────────────────────────────────┐
+│                     NoteDao                           │
+│              (Data Access Object)                     │
+│  - SQL queries (@Query)                              │
+│  - CRUD operations (@Insert, @Update, @Delete)       │
+│  - Returns LiveData for automatic updates            │
+└───────────────────┬──────────────────────────────────┘
+                    │ executes on
+                    ↓
+┌──────────────────────────────────────────────────────┐
+│                  Room Database                        │
+│                  (SQLite Layer)                       │
+│  - note_table with 5 columns                         │
+│  - Type-safe SQL queries                             │
+│  - Compile-time verification                         │
+└──────────────────────────────────────────────────────┘
+```
+
+### **Key Benefits:**
+
+- ✅ **Separation of Concerns:** UI, logic, and data are completely separated
+- ✅ **Testability:** Each layer can be tested independently
+- ✅ **Lifecycle Awareness:** ViewModel survives configuration changes (rotation)
+- ✅ **Reactive UI:** LiveData automatically updates the UI when data changes
+- ✅ **Type Safety:** Room provides compile-time SQL verification
+- ✅ **Scalability:** Easy to add new features without breaking existing code
 
 ---
 
@@ -95,24 +162,29 @@ and efficient state handling with modern Android best practices.
 QuickNotes/
 ├── app/src/main/
 │   ├── java/com/laylarodas/quicknotes/
-│   │   ├── MainActivity.java           # Main activity with search, sort, and CRUD
+│   │   ├── MainActivity.java            # Main UI (View layer)
 │   │   ├── model/
-│   │   │   └── Note.java              # Note model with UUID and timestamps
-│   │   ├── data/
-│   │   │   └── NotesStorage.java      # SharedPreferences data layer
+│   │   │   └── Note.java               # Note entity with @Entity annotation
+│   │   ├── database/
+│   │   │   ├── NoteDao.java            # Data Access Object (@Dao)
+│   │   │   ├── NoteDatabase.java       # Room database singleton (@Database)
+│   │   │   └── NoteRepository.java     # Repository pattern implementation
+│   │   ├── viewmodel/
+│   │   │   └── NoteViewModel.java      # ViewModel with LiveData
 │   │   ├── ui/
-│   │   │   └── NoteAdapter.java       # RecyclerView adapter
+│   │   │   └── NoteAdapter.java        # RecyclerView adapter
 │   │   └── utils/
-│   │       └── DateUtils.java         # Time formatting utilities
+│   │       └── DateUtils.java          # Time formatting utilities
 │   └── res/
 │       ├── layout/
-│       │   ├── activity_main.xml      # Main screen layout
-│       │   ├── item_note.xml          # Note card layout
-│       │   └── dialog_new_note.xml    # Create/Edit dialog
+│       │   ├── activity_main.xml       # Main screen with Toolbar & SearchView
+│       │   ├── item_note.xml           # Note card layout with details
+│       │   └── dialog_new_note.xml     # Create/Edit dialog
 │       ├── menu/
-│       │   └── main_menu.xml          # Toolbar menu (search, sort)
+│       │   └── main_menu.xml           # Toolbar menu (search, sort options)
 │       └── values/
-│           └── colors.xml             # Purple theme colors
+│           └── colors.xml              # Purple theme colors
+└── build.gradle                         # Dependencies (Room, Lifecycle)
 ```
 
 ---
@@ -131,9 +203,17 @@ QuickNotes/
 - ✅ Share notes integration
 - ✅ Toolbar with menu options
 
-### 🔜 **Phase 3 - Next Steps** (Planned)
-- 🔜 Migrate to Room Database
-- 🔜 Implement MVVM architecture with ViewModel
+### ✅ **Phase 3 - Professional Architecture** (Completed)
+- ✅ **Migrated to Room Database** (SQLite)
+- ✅ **Implemented MVVM architecture** with ViewModel and LiveData
+- ✅ **Repository Pattern** for data abstraction
+- ✅ **Automatic UI updates** with LiveData observers
+- ✅ **State persistence** survives screen rotation
+- ✅ **AsyncTask** for background database operations
+- ✅ **SQL queries** for fast search and sorting
+- ✅ **Unlimited note capacity** (vs SharedPreferences 1MB limit)
+
+### 🔜 **Phase 4 - Next Steps** (Planned)
 - 🔜 Add dark mode support
 - 🔜 Color-coded categories or tags
 - 🔜 Pin important notes
