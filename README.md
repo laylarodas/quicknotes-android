@@ -55,9 +55,28 @@ clean UI design with Material Design, and efficient state handling with **ViewMo
 - ✅ Native Android share sheet integration
 
 ### 💾 **Data Persistence**
-- ✅ Local storage with SharedPreferences (JSON)
+- ✅ Room Database (SQLite) with MVVM architecture
 - ✅ Automatic save on create/edit/delete
 - ✅ Data persists across app sessions
+- ✅ Export notes to JSON file (Downloads folder)
+
+### 🌙 **Theme & Customization**
+- ✅ Dark Mode with complete theme switching
+- ✅ Persistent theme preference
+- ✅ Light and dark color palettes
+- ✅ Smooth theme transitions
+
+### 🏷️ **Categories**
+- ✅ 7 color-coded categories (Work, Personal, Ideas, Important, Shopping, Study, None)
+- ✅ Visual category indicators (colored bar on note cards)
+- ✅ Category selector in create/edit dialogs
+- ✅ Categories visible at a glance
+
+### 📌 **Pin Notes**
+- ✅ Pin/unpin important notes
+- ✅ Pinned notes always appear at the top
+- ✅ Visual pin indicator on pinned notes
+- ✅ Pin/Unpin button in edit dialog
 
 ---
 
@@ -213,11 +232,15 @@ QuickNotes/
 - ✅ **SQL queries** for fast search and sorting
 - ✅ **Unlimited note capacity** (vs SharedPreferences 1MB limit)
 
-### 🔜 **Phase 4 - Next Steps** (Planned)
-- 🔜 Add dark mode support
-- 🔜 Color-coded categories or tags
-- 🔜 Pin important notes
-- 🔜 Export/Import notes (backup)
+### ✅ **Phase 4 - Advanced Features** (Completed)
+- ✅ **Dark Mode** with complete theme switching and persistent preference
+- ✅ **Color-coded Categories** (7 categories: Work, Personal, Ideas, Important, Shopping, Study, None)
+- ✅ **Pin Notes** functionality to keep important notes at the top
+- ✅ **Export Notes** to JSON file in Downloads folder
+- ✅ **Visual indicators** for categories (colored bar) and pinned notes (pin icon)
+- ✅ **Category selector** in create/edit dialogs
+- ✅ **Pin/Unpin button** in edit dialog
+- ✅ **Database version 3** with category and isPinned fields
 
 ---
 
