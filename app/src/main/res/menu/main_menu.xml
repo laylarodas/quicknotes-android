@@ -39,5 +39,23 @@
         </menu>
     </item>
     
+    <!-- Dark Mode Toggle -->
+    <item
+        android:id="@+id/action_dark_mode"
+        android:title="Modo oscuro"
+        android:checkable="true"
+        app:showAsAction="never" />
+    
+    <!-- Export/Import -->
+    <item
+        android:id="@+id/action_export"
+        android:title="💾 Exportar notas"
+        app:showAsAction="never" />
+    
+    <item
+        android:id="@+id/action_import"
+        android:title="📥 Importar notas"
+        app:showAsAction="never" />
+    
 </menu>
 

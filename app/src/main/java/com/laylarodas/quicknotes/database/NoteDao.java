@@ -53,35 +53,40 @@ public interface NoteDao {
     
     /**
      * Obtiene TODAS las notas ordenadas por fecha de modificación (más reciente primero).
+     * Las notas pinned aparecen primero.
      * LiveData: La UI se actualiza automáticamente cuando cambian los datos.
      */
-    @Query("SELECT * FROM note_table ORDER BY modifiedAt DESC")
+    @Query("SELECT * FROM note_table ORDER BY isPinned DESC, modifiedAt DESC")
     LiveData<List<Note>> getAllNotesByModified();
     
     /**
      * Obtiene todas las notas ordenadas por fecha de creación (más reciente primero).
+     * Las notas pinned aparecen primero.
      */
-    @Query("SELECT * FROM note_table ORDER BY createdAt DESC")
+    @Query("SELECT * FROM note_table ORDER BY isPinned DESC, createdAt DESC")
     LiveData<List<Note>> getAllNotesByCreated();
     
     /**
      * Obtiene todas las notas ordenadas alfabéticamente por título (A-Z).
+     * Las notas pinned aparecen primero.
      */
-    @Query("SELECT * FROM note_table ORDER BY title COLLATE NOCASE ASC")
+    @Query("SELECT * FROM note_table ORDER BY isPinned DESC, title COLLATE NOCASE ASC")
     LiveData<List<Note>> getAllNotesByTitleAsc();
     
     /**
      * Obtiene todas las notas ordenadas alfabéticamente por título (Z-A).
+     * Las notas pinned aparecen primero.
      */
-    @Query("SELECT * FROM note_table ORDER BY title COLLATE NOCASE DESC")
+    @Query("SELECT * FROM note_table ORDER BY isPinned DESC, title COLLATE NOCASE DESC")
     LiveData<List<Note>> getAllNotesByTitleDesc();
     
     /**
      * Busca notas que contengan el texto especificado en el título o contenido.
      * El parámetro searchQuery debe incluir los wildcard % (ej: "%texto%")
      * COLLATE NOCASE hace la búsqueda case-insensitive (no distingue mayúsculas).
+     * Las notas pinned aparecen primero.
      */
-    @Query("SELECT * FROM note_table WHERE title LIKE :searchQuery OR content LIKE :searchQuery ORDER BY modifiedAt DESC")
+    @Query("SELECT * FROM note_table WHERE title LIKE :searchQuery OR content LIKE :searchQuery ORDER BY isPinned DESC, modifiedAt DESC")
     LiveData<List<Note>> searchNotes(String searchQuery);
     
     // ==================== CONSULTAS SÍNCRONAS ====================

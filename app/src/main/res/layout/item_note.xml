@@ -20,8 +20,9 @@
         android:orientation="horizontal"
         android:padding="16dp">
         
-        <!-- Indicador lateral decorativo -->
+        <!-- Indicador lateral de categoría -->
         <View
+            android:id="@+id/viewCategoryIndicator"
             android:layout_width="4dp"
             android:layout_height="match_parent"
             android:background="@color/primary_purple"
@@ -34,17 +35,35 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
             
-            <!-- Título de la nota -->
-            <TextView
-                android:id="@+id/tvNoteTitle"
+            <!-- Título de la nota con indicador de pinned -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/sample_note"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                
+                <TextView
+                    android:id="@+id/tvNoteTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/sample_note"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+                
+                <TextView
+                    android:id="@+id/tvPinIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📌"
+                    android:textSize="16sp"
+                    android:layout_marginStart="4dp"
+                    android:visibility="gone" />
+                    
+            </LinearLayout>
             
             <!-- Preview del contenido -->
             <TextView

@@ -34,17 +34,25 @@ public class Note {
     
     @ColumnInfo(name = "modifiedAt")
     private long modifiedAt;
+    
+    @ColumnInfo(name = "category", defaultValue = "NONE")
+    private String category;
+    
+    @ColumnInfo(name = "isPinned", defaultValue = "0")
+    private boolean isPinned;
 
     /**
      * Constructor usado por Room para recrear objetos desde la base de datos.
      * Room requiere un constructor con todos los campos.
      */
-    public Note(@NonNull String id, String title, String content, long createdAt, long modifiedAt) {
+    public Note(@NonNull String id, String title, String content, long createdAt, long modifiedAt, String category, boolean isPinned) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
+        this.category = category != null ? category : "NONE";
+        this.isPinned = isPinned;
     }
     
     /**
@@ -58,6 +66,8 @@ public class Note {
         this.content = content;
         this.createdAt = System.currentTimeMillis();
         this.modifiedAt = System.currentTimeMillis();
+        this.category = "NONE";
+        this.isPinned = false;
     }
 
     // ==================== GETTERS ====================
@@ -81,6 +91,14 @@ public class Note {
 
     public long getModifiedAt() {
         return modifiedAt;
+    }
+    
+    public String getCategory() {
+        return category != null ? category : "NONE";
+    }
+    
+    public boolean isPinned() {
+        return isPinned;
     }
 
     // ==================== SETTERS ====================
@@ -106,6 +124,14 @@ public class Note {
     
     public void setModifiedAt(long modifiedAt) {
         this.modifiedAt = modifiedAt;
+    }
+    
+    public void setCategory(String category) {
+        this.category = category != null ? category : "NONE";
+    }
+    
+    public void setPinned(boolean pinned) {
+        this.isPinned = pinned;
     }
 
     // ==================== MÉTODOS DE MIGRACIÓN ====================
@@ -143,7 +169,9 @@ public class Note {
             String content = obj.getString("content");
             long createdAt = obj.optLong("createdAt", System.currentTimeMillis());
             long modifiedAt = obj.optLong("modifiedAt", System.currentTimeMillis());
-            return new Note(id, title, content, createdAt, modifiedAt);
+            String category = obj.optString("category", "NONE");
+            boolean isPinned = obj.optBoolean("isPinned", false);
+            return new Note(id, title, content, createdAt, modifiedAt, category, isPinned);
         } catch (JSONException e) {
             return new Note("Error", "Invalid data");
         }

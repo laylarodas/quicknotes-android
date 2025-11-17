@@ -59,6 +59,14 @@ public class NoteViewModel extends AndroidViewModel {
     }
     
     /**
+     * Inserta una nota ya creada en la base de datos.
+     * Útil cuando se necesita configurar campos adicionales como la categoría.
+     */
+    public void insert(Note note) {
+        repository.insert(note);
+    }
+    
+    /**
      * Actualiza una nota existente.
      */
     public void update(Note note) {

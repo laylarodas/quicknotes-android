@@ -19,8 +19,11 @@ import com.laylarodas.quicknotes.model.Note;
  * - exportSchema: Si exportar el esquema (false en desarrollo)
  * 
  * Patrón Singleton: Solo una instancia de la BD en toda la app.
+ * 
+ * Version 2: Agregado campo "category" a Note
+ * Version 3: Agregado campo "isPinned" a Note
  */
-@Database(entities = {Note.class}, version = 1, exportSchema = false)
+@Database(entities = {Note.class}, version = 3, exportSchema = false)
 public abstract class NoteDatabase extends RoomDatabase {
     
     // Instancia única (Singleton)

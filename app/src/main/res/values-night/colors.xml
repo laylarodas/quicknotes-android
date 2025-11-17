@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paleta de colores para Dark Mode -->
+    <color name="primary_purple">#D0BCFF</color>
+    <color name="primary_light">#E8DEF8</color>
+    <color name="primary_dark">#381E72</color>
+    
+    <color name="secondary_teal">#4DD0E1</color>
+    <color name="secondary_light">#80DEEA</color>
+    
+    <!-- Fondos y superficies oscuros -->
+    <color name="background_light">#1C1B1F</color>
+    <color name="surface_white">#2B2930</color>
+    <color name="surface_card">#36343B</color>
+    
+    <!-- Textos para Dark Mode -->
+    <color name="text_primary">#E6E1E5</color>
+    <color name="text_secondary">#CAC4D0</color>
+    
+    <!-- Acentos -->
+    <color name="accent_blue">#82B1FF</color>
+    <color name="accent_amber">#FFD54F</color>
+</resources>
+

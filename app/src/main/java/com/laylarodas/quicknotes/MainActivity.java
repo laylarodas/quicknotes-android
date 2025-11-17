@@ -1,17 +1,22 @@
 package com.laylarodas.quicknotes;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
@@ -22,9 +27,11 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.laylarodas.quicknotes.model.Note;
+import com.laylarodas.quicknotes.model.NoteCategory;
 import com.laylarodas.quicknotes.ui.NoteAdapter;
 import com.laylarodas.quicknotes.viewmodel.NoteViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,6 +45,9 @@ import java.util.List;
  */
 public class MainActivity extends AppCompatActivity {
 
+    private static final String PREFS_NAME = "QuickNotesPrefs";
+    private static final String KEY_DARK_MODE = "dark_mode";
+    
     private NoteViewModel viewModel;
     private NoteAdapter adapter;
     private View layoutEmptyState;
@@ -46,12 +56,19 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvEmptyMessage;
     private SearchView searchView;
     private List<Note> currentNotes; // Lista actual para el estado vacío
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Cargar preferencia de tema ANTES de setContentView
+        loadThemePreference();
+        
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+        
+        // Inicializar SharedPreferences
+        preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
         // Configurar Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -110,6 +127,17 @@ public class MainActivity extends AppCompatActivity {
         
         TextInputEditText etTitle = dialogView.findViewById(R.id.etNoteTitle);
         TextInputEditText etContent = dialogView.findViewById(R.id.etNoteContent);
+        Spinner spinnerCategory = dialogView.findViewById(R.id.spinnerCategory);
+        
+        // Configurar Spinner de categorías
+        List<String> categoryNames = new ArrayList<>();
+        for (NoteCategory category : NoteCategory.values()) {
+            categoryNames.add(category.getDisplayName());
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
+                android.R.layout.simple_spinner_item, categoryNames);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory.setAdapter(adapter);
         
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(dialogView)
@@ -119,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
         dialogView.findViewById(R.id.btnSave).setOnClickListener(v -> {
             String title = etTitle.getText().toString().trim();
             String content = etContent.getText().toString().trim();
+            String category = NoteCategory.values()[spinnerCategory.getSelectedItemPosition()].name();
             
             // Validar título
             if (title.isEmpty()) {
@@ -127,8 +156,10 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             
-            // ¡MUCHO MÁS SIMPLE! Solo llamar al ViewModel
-            viewModel.insert(title, content);
+            // Crear nota con categoría
+            Note note = new Note(title, content);
+            note.setCategory(category);
+            viewModel.insert(note);
             
             Toast.makeText(this, "Nota guardada", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
@@ -150,21 +181,46 @@ public class MainActivity extends AppCompatActivity {
         TextView tvDialogTitle = dialogView.findViewById(R.id.tvDialogTitle);
         TextInputEditText etTitle = dialogView.findViewById(R.id.etNoteTitle);
         TextInputEditText etContent = dialogView.findViewById(R.id.etNoteContent);
+        Spinner spinnerCategory = dialogView.findViewById(R.id.spinnerCategory);
         
         tvDialogTitle.setText("Editar Nota");
         etTitle.setText(note.getTitle());
         etContent.setText(note.getContent());
         
-        // Diálogo con botón de compartir
+        // Configurar Spinner de categorías
+        List<String> categoryNames = new ArrayList<>();
+        for (NoteCategory category : NoteCategory.values()) {
+            categoryNames.add(category.getDisplayName());
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
+                android.R.layout.simple_spinner_item, categoryNames);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory.setAdapter(adapter);
+        
+        // Preseleccionar la categoría actual
+        NoteCategory currentCategory = NoteCategory.fromString(note.getCategory());
+        spinnerCategory.setSelection(currentCategory.ordinal());
+        
+        // Diálogo con botones de compartir y pin
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
         builder.setNeutralButton("📤 Compartir", (dialog, which) -> shareNote(note));
+        
+        // Botón de Pin/Unpin
+        String pinButtonText = note.isPinned() ? "Desfijar" : "📌 Fijar";
+        builder.setPositiveButton(pinButtonText, (dialog, which) -> {
+            note.setPinned(!note.isPinned());
+            viewModel.update(note);
+            Toast.makeText(this, note.isPinned() ? "Nota fijada" : "Nota desfijada", Toast.LENGTH_SHORT).show();
+        });
+        
         AlertDialog dialog = builder.create();
         
         // Botón Guardar
         dialogView.findViewById(R.id.btnSave).setOnClickListener(v -> {
             String title = etTitle.getText().toString().trim();
             String content = etContent.getText().toString().trim();
+            String category = NoteCategory.values()[spinnerCategory.getSelectedItemPosition()].name();
             
             if (title.isEmpty()) {
                 etTitle.setError("El título es obligatorio");
@@ -175,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
             // Actualizar los campos de la nota
             note.setTitle(title);
             note.setContent(content);
+            note.setCategory(category);
             
             // ¡MUCHO MÁS SIMPLE! Solo llamar al ViewModel
             viewModel.update(note);
@@ -237,6 +294,16 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
+    
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Actualizar el estado del checkbox de Dark Mode
+        MenuItem darkModeItem = menu.findItem(R.id.action_dark_mode);
+        if (darkModeItem != null) {
+            darkModeItem.setChecked(isDarkModeEnabled());
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -252,6 +319,18 @@ public class MainActivity extends AppCompatActivity {
                 searchView.setVisibility(View.VISIBLE);
                 searchView.requestFocus();
             }
+            return true;
+        } else if (id == R.id.action_dark_mode) {
+            // Toggle Dark Mode
+            toggleDarkMode();
+            return true;
+        } else if (id == R.id.action_export) {
+            // Export notes
+            exportNotes();
+            return true;
+        } else if (id == R.id.action_import) {
+            // Import notes
+            importNotes();
             return true;
         } else if (id == R.id.sort_by_modified) {
             item.setChecked(true);
@@ -317,5 +396,105 @@ public class MainActivity extends AppCompatActivity {
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(this, "No hay aplicaciones para compartir", Toast.LENGTH_SHORT).show();
         }
+    }
+    
+    // ==================== DARK MODE ====================
+    
+    /**
+     * Carga la preferencia de tema guardada y la aplica.
+     * Se llama ANTES de setContentView() para evitar parpadeos.
+     */
+    private void loadThemePreference() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        boolean isDarkMode = prefs.getBoolean(KEY_DARK_MODE, false);
+        
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+    }
+    
+    /**
+     * Cambia entre modo claro y oscuro.
+     */
+    private void toggleDarkMode() {
+        boolean isDarkMode = preferences.getBoolean(KEY_DARK_MODE, false);
+        boolean newMode = !isDarkMode;
+        
+        // Guardar la nueva preferencia
+        preferences.edit().putBoolean(KEY_DARK_MODE, newMode).apply();
+        
+        // Aplicar el nuevo tema
+        if (newMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+        
+        // Recrear la Activity para aplicar el tema
+        recreate();
+    }
+    
+    /**
+     * Verifica si el dark mode está activo.
+     */
+    private boolean isDarkModeEnabled() {
+        return preferences.getBoolean(KEY_DARK_MODE, false);
+    }
+    
+    // ==================== EXPORT/IMPORT ====================
+    
+    /**
+     * Exporta todas las notas a un archivo JSON en la carpeta de Descargas.
+     */
+    private void exportNotes() {
+        if (currentNotes == null || currentNotes.isEmpty()) {
+            Toast.makeText(this, "No hay notas para exportar", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        try {
+            // Crear archivo en el directorio de Descargas
+            java.io.File downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
+                    android.os.Environment.DIRECTORY_DOWNLOADS);
+            String fileName = "quicknotes_backup_" + System.currentTimeMillis() + ".json";
+            java.io.File file = new java.io.File(downloadsDir, fileName);
+            
+            // Crear JSON Array con todas las notas
+            org.json.JSONArray jsonArray = new org.json.JSONArray();
+            for (Note note : currentNotes) {
+                org.json.JSONObject noteJson = new org.json.JSONObject();
+                noteJson.put("id", note.getId());
+                noteJson.put("title", note.getTitle());
+                noteJson.put("content", note.getContent());
+                noteJson.put("createdAt", note.getCreatedAt());
+                noteJson.put("modifiedAt", note.getModifiedAt());
+                noteJson.put("category", note.getCategory());
+                noteJson.put("isPinned", note.isPinned());
+                jsonArray.put(noteJson);
+            }
+            
+            // Escribir al archivo
+            java.io.FileWriter fileWriter = new java.io.FileWriter(file);
+            fileWriter.write(jsonArray.toString(2)); // Pretty print con indentación
+            fileWriter.close();
+            
+            Toast.makeText(this, "✅ Exportado: " + fileName, Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(this, "❌ Error al exportar: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Muestra un diálogo para confirmar la importación de notas.
+     */
+    private void importNotes() {
+        new AlertDialog.Builder(this)
+                .setTitle("Importar notas")
+                .setMessage("Esta función requiere permisos de almacenamiento y un archivo JSON válido. Por ahora, puedes usar la función de exportar para crear backups.")
+                .setPositiveButton("Entendido", null)
+                .show();
     }
 }

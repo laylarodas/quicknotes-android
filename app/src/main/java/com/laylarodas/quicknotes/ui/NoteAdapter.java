@@ -1,5 +1,6 @@
 package com.laylarodas.quicknotes.ui;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import java.util.List;
 
 import com.laylarodas.quicknotes.R;
 import com.laylarodas.quicknotes.model.Note;
+import com.laylarodas.quicknotes.model.NoteCategory;
 import com.laylarodas.quicknotes.utils.DateUtils;
 
 /**
@@ -85,6 +87,13 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         // Mostrar fecha de última modificación
         holder.tvNoteDate.setText(DateUtils.getTimeAgo(note.getModifiedAt()));
         
+        // Mostrar color de categoría en el indicador lateral
+        NoteCategory category = NoteCategory.fromString(note.getCategory());
+        holder.viewCategoryIndicator.setBackgroundColor(Color.parseColor(category.getColorHex()));
+        
+        // Mostrar indicador de nota pinned
+        holder.tvPinIndicator.setVisibility(note.isPinned() ? View.VISIBLE : View.GONE);
+        
         // Configurar click listener para editar
         holder.itemView.setOnClickListener(v -> {
             if (onNoteClickListener != null) {
@@ -111,12 +120,16 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         final TextView tvNoteTitle;
         final TextView tvNoteContent;
         final TextView tvNoteDate;
+        final TextView tvPinIndicator;
+        final View viewCategoryIndicator;
 
         NoteViewHolder(@NonNull View itemView){
             super(itemView);
             tvNoteTitle = itemView.findViewById(R.id.tvNoteTitle);
             tvNoteContent = itemView.findViewById(R.id.tvNoteContent);
             tvNoteDate = itemView.findViewById(R.id.tvNoteDate);
+            tvPinIndicator = itemView.findViewById(R.id.tvPinIndicator);
+            viewCategoryIndicator = itemView.findViewById(R.id.viewCategoryIndicator);
         }
     }
 
