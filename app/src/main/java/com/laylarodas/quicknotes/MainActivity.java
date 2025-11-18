@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import com.laylarodas.quicknotes.model.Note;
 import com.laylarodas.quicknotes.model.NoteCategory;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private SearchView searchView;
     private List<Note> currentNotes; // Lista actual para el estado vacío
     private SharedPreferences preferences;
+    private View rootView; // Para mostrar Snackbar
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
         
         // Inicializar SharedPreferences
         preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        
+        // Obtener vista raíz para Snackbar
+        rootView = findViewById(android.R.id.content);
 
         // Configurar Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -240,25 +245,54 @@ public class MainActivity extends AppCompatActivity {
             dialog.dismiss();
         });
         
-        // Botón Cancelar
-        dialogView.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
+        // Botón Cancelar con confirmación si hay cambios sin guardar
+        dialogView.findViewById(R.id.btnCancel).setOnClickListener(v -> {
+            String currentTitle = etTitle.getText().toString().trim();
+            String currentContent = etContent.getText().toString().trim();
+            String currentCategoryName = NoteCategory.values()[spinnerCategory.getSelectedItemPosition()].name();
+            
+            // Verificar si hay cambios sin guardar
+            boolean hasChanges = !currentTitle.equals(note.getTitle()) ||
+                                !currentContent.equals(note.getContent()) ||
+                                !currentCategoryName.equals(note.getCategory());
+            
+            if (hasChanges) {
+                // Mostrar diálogo de confirmación
+                new AlertDialog.Builder(this)
+                        .setTitle("¿Descartar cambios?")
+                        .setMessage("Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?")
+                        .setPositiveButton("Descartar", (d, w) -> dialog.dismiss())
+                        .setNegativeButton("Continuar editando", null)
+                        .show();
+            } else {
+                // No hay cambios, cerrar directamente
+                dialog.dismiss();
+            }
+        });
         
         dialog.show();
     }
 
     /**
      * Muestra el diálogo de confirmación para eliminar una nota.
-     * Ya no necesita la posición.
+     * Incluye Snackbar con opción de deshacer.
      */
     private void showDeleteConfirmationDialog(Note note) {
         new AlertDialog.Builder(this)
                 .setTitle("Eliminar nota")
                 .setMessage("¿Estás seguro de que deseas eliminar esta nota?\n\n\"" + note.getTitle() + "\"")
                 .setPositiveButton("Eliminar", (dialog, which) -> {
-                    // ¡MUCHO MÁS SIMPLE! Solo llamar al ViewModel
+                    // Eliminar la nota
                     viewModel.delete(note);
                     
-                    Toast.makeText(this, "Nota eliminada", Toast.LENGTH_SHORT).show();
+                    // Mostrar Snackbar con opción de deshacer
+                    Snackbar.make(rootView, "Nota eliminada", Snackbar.LENGTH_LONG)
+                            .setAction("DESHACER", v -> {
+                                // Restaurar la nota eliminada
+                                viewModel.insert(note);
+                                Toast.makeText(this, "Nota restaurada", Toast.LENGTH_SHORT).show();
+                            })
+                            .show();
                 })
                 .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
                 .show();

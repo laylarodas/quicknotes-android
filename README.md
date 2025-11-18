@@ -78,19 +78,47 @@ clean UI design with Material Design, and efficient state handling with **ViewMo
 - ✅ Visual pin indicator on pinned notes
 - ✅ Pin/Unpin button in edit dialog
 
+### ↩️ **Smart UX Features**
+- ✅ Undo delete with Snackbar (restore accidentally deleted notes)
+- ✅ Unsaved changes confirmation (prevents accidental data loss)
+- ✅ Contextual empty state messages
+- ✅ Visual feedback for all user actions
+
 ---
 
 ## 🧠 Key Learning Goals
 
+### **Core Android Fundamentals:**
 - ✅ Understand the **Android project structure** (`manifests`, `java`, `res`, Gradle)
-- ✅ Design responsive interfaces using **XML layouts**
+- ✅ Design responsive interfaces using **XML layouts** and Material Design
 - ✅ Manage **Activity lifecycle** and user interactions
 - ✅ Display dynamic lists with **RecyclerView** and custom adapters
-- ✅ Implement **local data storage** with SharedPreferences
-- ✅ Handle user input with **SearchView** and **Toolbar menus**
-- ✅ Implement **sorting and filtering** algorithms
-- ✅ Use **Java Streams** for data manipulation
-- ✅ Practice **version control** and project documentation on GitHub
+
+### **Architecture & Data:**
+- ✅ Implement **MVVM architecture** (Model-View-ViewModel)
+- ✅ Use **Room Database** for local persistence
+- ✅ Understand **LiveData** and reactive programming
+- ✅ Apply **Repository Pattern** for data abstraction
+- ✅ Handle **background operations** with AsyncTask
+
+### **Advanced Features:**
+- ✅ Implement **real-time search** with LiveData transformations
+- ✅ Create **dynamic themes** (Light/Dark mode)
+- ✅ Persist user preferences with **SharedPreferences**
+- ✅ Handle **File I/O** and JSON serialization
+- ✅ Implement **Enums** for type-safe constants
+
+### **UX Best Practices:**
+- ✅ Provide **undo functionality** with Snackbar
+- ✅ Prevent **data loss** with unsaved changes confirmation
+- ✅ Create **contextual empty states**
+- ✅ Use **relative time formatting**
+- ✅ Implement **share intents** for cross-app communication
+
+### **Professional Development:**
+- ✅ Practice **Git version control** with meaningful commits
+- ✅ Write **clear documentation** (README, code comments)
+- ✅ Structure projects for **scalability and maintainability**
 
 ---
 
@@ -100,12 +128,14 @@ clean UI design with Material Design, and efficient state handling with **ViewMo
 |--------------------|-----------------------------------------------|
 | Language           | **Java (Android SDK)**                        |
 | IDE                | **Android Studio (Latest)**                   |
-| UI Components      | XML Layouts + Material Design 3               |
+| UI Components      | Material Design 3 (CardView, FAB, Snackbar)   |
 | Layout             | ConstraintLayout, LinearLayout                |
 | Database           | **Room 2.6.1** (SQLite abstraction)           |
 | Architecture       | **MVVM** (Model-View-ViewModel)               |
 | Lifecycle          | **ViewModel + LiveData 2.7.0**                |
 | Async Operations   | AsyncTask (Room operations)                   |
+| Themes             | AppCompat with Day/Night support              |
+| Data Serialization | JSON (org.json for export)                    |
 | Version Control    | Git & GitHub                                  |
 | Min SDK            | API 21 (Android 5.0)                          |
 | Target SDK         | API 34 (Android 14)                           |
@@ -237,10 +267,13 @@ QuickNotes/
 - ✅ **Color-coded Categories** (7 categories: Work, Personal, Ideas, Important, Shopping, Study, None)
 - ✅ **Pin Notes** functionality to keep important notes at the top
 - ✅ **Export Notes** to JSON file in Downloads folder
+- ✅ **Undo Delete** with Snackbar for accidental deletion recovery
+- ✅ **Unsaved Changes Confirmation** prevents data loss when canceling edits
 - ✅ **Visual indicators** for categories (colored bar) and pinned notes (pin icon)
 - ✅ **Category selector** in create/edit dialogs
 - ✅ **Pin/Unpin button** in edit dialog
 - ✅ **Database version 3** with category and isPinned fields
+- ✅ **Professional UX patterns** for improved user experience
 
 ---
 
@@ -272,12 +305,16 @@ QuickNotes/
 
 ## 🎮 How to Use
 
-1. **Create a note:** Tap the purple **+** button
-2. **Edit a note:** Tap on any note card
-3. **Delete a note:** Long-press on a note → confirm deletion
-4. **Search notes:** Tap the 🔍 icon → type to filter
-5. **Sort notes:** Tap the sort icon → choose sorting method
-6. **Share a note:** Open a note → tap **📤 Compartir**
+1. **Create a note:** Tap the purple **+** button → select category → enter title and content
+2. **Edit a note:** Tap on any note card → modify content → save
+3. **Delete a note:** Long-press on a note → confirm deletion → tap DESHACER to undo
+4. **Pin a note:** Open a note → tap **📌 Fijar** button (pinned notes stay at top)
+5. **Search notes:** Tap the 🔍 icon → type to filter by title or content
+6. **Sort notes:** Tap the sort icon → choose sorting method (date/alphabetical)
+7. **Share a note:** Open a note → tap **📤 Compartir** → select app
+8. **Toggle Dark Mode:** Menu (⋮) → **Modo oscuro** → theme switches instantly
+9. **Export notes:** Menu (⋮) → **💾 Exportar notas** → saves JSON to Downloads folder
+10. **Unsaved changes:** When editing, if you tap Cancel with changes, you'll be asked to confirm
 
 ---
 
@@ -287,9 +324,19 @@ QuickNotes/
 
 ---
 
-## 🐛 Known Issues
+## 🔮 Future Enhancements
 
-- None at the moment! 🎉
+While this project is complete as a learning exercise, potential improvements for production could include:
+- Import notes from JSON file with conflict resolution
+- Backup sync with cloud services (Firebase)
+- Reminders and notifications
+- Rich text editing (bold, italic, lists)
+- Image attachments
+- Voice notes recording
+- Home screen widget
+- Note sharing via QR code
+
+**Note:** This project focuses on core Android fundamentals rather than feature completeness.
 
 ---
 
@@ -303,9 +350,17 @@ Feel free to fork and learn from it!
 ## ✍️ Author
 
 **Layla Rodas**  
+🎓 DAM Student | Android Developer  
 💼 [GitHub Profile](https://github.com/laylarodas)  
-🧭 **Android Development | Java | DAM Student**
+
+Passionate about mobile development and clean architecture. This project demonstrates my understanding of Android fundamentals, MVVM pattern, and modern development practices. Open to junior developer opportunities!
 
 ---
 
-> "Great things are built by starting small — and this is getting big! 🚀"
+## 🙏 Acknowledgments
+
+This project was developed as part of my learning journey in the **DAM (Desarrollo de Aplicaciones Multiplataforma)** program. Special thanks to the Android developer community for their excellent documentation and resources.
+
+---
+
+> *"Building real projects is the best way to learn. This is my journey!" 🚀*
